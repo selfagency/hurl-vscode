@@ -149,6 +149,7 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -157,4 +158,4 @@ jobs:
           files: coverage/
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
+          fail_ci_if_error: false
