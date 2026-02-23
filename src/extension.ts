@@ -39,7 +39,7 @@ async function parserInit() {
   const query = (Hurl as any).query(highlights);
   sitter = [parser, query];
 }
-parserInit();
+void parserInit();
 
 const tokenTypes = Object.values(symbolTypeMap);
 const legend = new vscode.SemanticTokensLegend(tokenTypes);
