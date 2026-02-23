@@ -98,6 +98,18 @@ export function activate(context: vscode.ExtensionContext) {
     // non-fatal; keep extension activation working even if LSP scaffold has issues
     console.error('Failed to start language client (scaffold):', e);
   }
+  // register a scaffold run command used by LSP CodeLens
+  const runDisposable = vscode.commands.registerCommand('hurl.run', async (uri: string, lineOrIndex?: number) => {
+    try {
+      const doc = uri ? await vscode.workspace.openTextDocument(uri) : vscode.window.activeTextEditor?.document;
+      const line = typeof lineOrIndex === 'number' ? lineOrIndex : 0;
+      if (!doc) return;
+      vscode.window.showInformationMessage(`Run scaffold command for ${doc.uri.fsPath} at line ${line}`);
+    } catch (err) {
+      console.error('hurl.run command failed', err);
+    }
+  });
+  context.subscriptions.push(runDisposable);
   let disposable = vscode.commands.registerCommand('hurl.hurl', () => {
     const path = vscode.window.activeTextEditor?.document.fileName;
     if (!path) {

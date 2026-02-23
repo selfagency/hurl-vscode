@@ -73,7 +73,7 @@ export function startServer(): void {
       if (lines[i].trim().length > 0) {
         lenses.push({
           range: Range.create(i, 0, i, Math.min(80, lines[i].length)),
-          data: { command: 'hurl.run', title: 'Run (scaffold)' }
+          command: { title: 'Run (scaffold)', command: 'hurl.run', arguments: [params.textDocument.uri, i] }
         } as any);
         break;
       }
