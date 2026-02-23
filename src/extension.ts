@@ -5,7 +5,8 @@ import * as vscode from 'vscode';
 import Convert from 'ansi-to-html';
 import { exec } from 'child_process';
 import * as path from 'path';
-import * as Parser from 'web-tree-sitter';
+import Parser from 'web-tree-sitter';
+import { createClient } from './client';
 import { highlights } from './query';
 var convert = new Convert({ escapeXML: true });
 
@@ -28,18 +29,17 @@ const symbolTypeMap: Record<string, string> = {
   float: 'number'
 };
 
-type AnyParser = any;
-let sitter: [AnyParser, any] | null = null;
+let sitter: [Parser, Parser.Query] | null = null;
 async function parserInit() {
-  await (Parser as any).init();
-  const parser = new (Parser as any)();
+  await Parser.init();
+  const parser = new Parser();
   let langFile = path.join(__dirname, '../', 'tree-sitter-hurl.wasm');
-  const Hurl = await (Parser as any).Language.load(langFile);
-  parser.setLanguage(Hurl as any);
-  const query = (Hurl as any).query(highlights);
+  const Hurl = await Parser.Language.load(langFile);
+  parser.setLanguage(Hurl);
+  const query = Hurl.query(highlights);
   sitter = [parser, query];
 }
-void parserInit();
+parserInit();
 
 const tokenTypes = Object.values(symbolTypeMap);
 const legend = new vscode.SemanticTokensLegend(tokenTypes);
@@ -56,7 +56,7 @@ const provider: vscode.DocumentSemanticTokensProvider = {
     const tree = parser.parse(document.getText());
     const captures = query.captures(tree.rootNode);
 
-    captures.forEach((capture: any) => {
+    captures.forEach((capture) => {
       if (!symbolTypeMap[capture.name]) return;
       for (let i = capture.node.startPosition.row; i <= capture.node.endPosition.row; i++) {
         let startColumn = capture.node.startPosition.column;
@@ -84,6 +84,20 @@ vscode.languages.registerDocumentSemanticTokensProvider(selector, provider, lege
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  // start the language client (minimal scaffold)
+  try {
+    const client = createClient(context);
+    client.start();
+    // ensure client is stopped on deactivate
+    context.subscriptions.push({
+      dispose: () => {
+        void client.stop();
+      }
+    } as vscode.Disposable);
+  } catch (e) {
+    // non-fatal; keep extension activation working even if LSP scaffold has issues
+    console.error('Failed to start language client (scaffold):', e);
+  }
   let disposable = vscode.commands.registerCommand('hurl.hurl', () => {
     const path = vscode.window.activeTextEditor?.document.fileName;
     if (!path) {
