@@ -3,7 +3,9 @@ import { ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 
 export function createClient(context: ExtensionContext): LanguageClient {
-  const serverModule = context.asAbsolutePath(path.join('out', 'server.js'));
+  const serverModule = (context && typeof (context as any).asAbsolutePath === 'function')
+    ? (context as any).asAbsolutePath(path.join('out', 'server.js'))
+    : path.join(__dirname, 'server.js');
 
   const serverOptions: ServerOptions = {
     run: { module: serverModule, transport: TransportKind.ipc },
