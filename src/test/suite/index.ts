@@ -1,38 +1,32 @@
+import { spawn } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
-import Mocha from 'mocha';
-import glob from 'glob';
 
 export function run(): Promise<void> {
-	// Create the mocha test
-	const mocha = new Mocha({
-		ui: 'tdd',
-		color: true
-	});
+  // prefer running tests against the source test folder so vitest runs TS/JS sources
+  const projectRoot = path.resolve(__dirname, '..', '..', '..');
+  const testsRoot = path.resolve(projectRoot, 'src', 'test');
 
-	const testsRoot = path.resolve(__dirname, '..');
+  return new Promise((resolve, reject) => {
+    // Prefer using the local vitest binary if available (robust inside extension host)
+    const binName = process.platform === 'win32' ? 'vitest.cmd' : 'vitest';
+    const localBin = path.resolve(__dirname, '..', '..', '..', 'node_modules', '.bin', binName);
+    let cmd: string;
+    let args: string[];
+    if (fs.existsSync(localBin)) {
+      cmd = localBin;
+      args = ['run', '--reporter', 'dot', '--dir', testsRoot];
+    } else {
+      // fallback to npx which should pick up local install
+      cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+      args = ['vitest', 'run', '--reporter', 'dot', '--dir', testsRoot];
+    }
+    const p = spawn(cmd, args, { stdio: 'inherit' });
 
-	return new Promise((c, e) => {
-		glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
-			if (err) {
-				return e(err);
-			}
-
-			// Add files to the test suite
-			files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
-
-			try {
-				// Run the mocha test
-				mocha.run(failures => {
-					if (failures > 0) {
-						e(new Error(`${failures} tests failed.`));
-					} else {
-						c();
-					}
-				});
-			} catch (err) {
-				console.error(err);
-				e(err);
-			}
-		});
-	});
+    p.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`vitest exited with code ${code}`));
+    });
+    p.on('error', (err) => reject(err));
+  });
 }
