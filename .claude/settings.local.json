@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:code.visualstudio.com)",
+      "Bash(grep -r \"export\" /Users/daniel/Developer/hurl-vscode/src/*.ts)"
+    ]
+  }
+}
