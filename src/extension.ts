@@ -29,14 +29,16 @@ const symbolTypeMap: Record<string, string> = {
   float: 'number'
 };
 
-let sitter: [Parser, Parser.Query] | null = null;
+// tree-sitter types are a bit awkward with the shipped typings; keep this loosely typed
+let sitter: [any, any] | null = null;
 async function parserInit() {
-  await Parser.init();
-  const parser = new Parser();
+  // the published typings don't expose some static members, so cast to any
+  await (Parser as any).init();
+  const parser = new (Parser as any)();
   let langFile = path.join(__dirname, '../', 'tree-sitter-hurl.wasm');
-  const Hurl = await Parser.Language.load(langFile);
+  const Hurl = await (Parser as any).Language.load(langFile);
   parser.setLanguage(Hurl);
-  const query = Hurl.query(highlights);
+  const query = (Hurl as any).query(highlights);
   sitter = [parser, query];
 }
 parserInit();
@@ -56,7 +58,7 @@ const provider: vscode.DocumentSemanticTokensProvider = {
     const tree = parser.parse(document.getText());
     const captures = query.captures(tree.rootNode);
 
-    captures.forEach((capture) => {
+    captures.forEach((capture: any) => {
       if (!symbolTypeMap[capture.name]) return;
       for (let i = capture.node.startPosition.row; i <= capture.node.endPosition.row; i++) {
         let startColumn = capture.node.startPosition.column;

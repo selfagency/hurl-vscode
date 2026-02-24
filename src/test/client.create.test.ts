@@ -1,7 +1,8 @@
 import * as assert from 'assert';
+import { describe, it } from 'vitest';
 
-suite('LSP Client (scaffold) - exports', () => {
-  test('client exports createClient', () => {
+describe('LSP Client (scaffold) - exports', () => {
+  it('client exports createClient', () => {
     const client = require('../client');
     assert.strictEqual(typeof client.createClient, 'function');
   });

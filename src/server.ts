@@ -5,7 +5,6 @@ import {
   createConnection,
   Diagnostic,
   DiagnosticSeverity,
-  Hover,
   InitializeParams,
   ProposedFeatures,
   Range,

@@ -19,7 +19,8 @@
 		"forceConsistentCasingInFileNames": true,
 		"paths": {},
 		"types": [
-			"node"
+			"node",
+			"vitest"
 		]
 	},
 	"include": [
