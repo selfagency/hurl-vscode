@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import Convert from 'ansi-to-html';
 import { exec } from 'child_process';
 import * as path from 'path';
-import Parser from 'web-tree-sitter';
+import * as Parser from 'web-tree-sitter';
 import { createClient } from './client';
 import { highlights } from './query';
 var convert = new Convert({ escapeXML: true });
@@ -34,14 +34,14 @@ let sitter: [any, any] | null = null;
 async function parserInit() {
   // the published typings don't expose some static members, so cast to any
   await (Parser as any).init();
-  const parser = new (Parser as any)();
+  const ParserCtor = (Parser as any).default ?? (Parser as any);
+  const parser = new ParserCtor();
   let langFile = path.join(__dirname, '../', 'tree-sitter-hurl.wasm');
   const Hurl = await (Parser as any).Language.load(langFile);
   parser.setLanguage(Hurl);
   const query = (Hurl as any).query(highlights);
   sitter = [parser, query];
 }
-parserInit();
 
 const tokenTypes = Object.values(symbolTypeMap);
 const legend = new vscode.SemanticTokensLegend(tokenTypes);
@@ -86,6 +86,8 @@ vscode.languages.registerDocumentSemanticTokensProvider(selector, provider, lege
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  // initialize tree-sitter parser asynchronously (do not block activation)
+  void parserInit();
   // start the language client (minimal scaffold)
   try {
     const client = createClient(context);
