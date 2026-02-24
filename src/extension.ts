@@ -6,6 +6,7 @@ import Convert from 'ansi-to-html';
 import { exec } from 'child_process';
 import * as path from 'path';
 import * as Parser from 'web-tree-sitter';
+import { createClient } from './client';
 import { highlights } from './query';
 var convert = new Convert({ escapeXML: true });
 
@@ -28,18 +29,19 @@ const symbolTypeMap: Record<string, string> = {
   float: 'number'
 };
 
-type AnyParser = any;
-let sitter: [AnyParser, any] | null = null;
+// tree-sitter types are a bit awkward with the shipped typings; keep this loosely typed
+let sitter: [any, any] | null = null;
 async function parserInit() {
+  // the published typings don't expose some static members, so cast to any
   await (Parser as any).init();
-  const parser = new (Parser as any)();
+  const ParserCtor = (Parser as any).default ?? (Parser as any);
+  const parser = new ParserCtor();
   let langFile = path.join(__dirname, '../', 'tree-sitter-hurl.wasm');
   const Hurl = await (Parser as any).Language.load(langFile);
-  parser.setLanguage(Hurl as any);
+  parser.setLanguage(Hurl);
   const query = (Hurl as any).query(highlights);
   sitter = [parser, query];
 }
-void parserInit();
 
 const tokenTypes = Object.values(symbolTypeMap);
 const legend = new vscode.SemanticTokensLegend(tokenTypes);
@@ -84,6 +86,34 @@ vscode.languages.registerDocumentSemanticTokensProvider(selector, provider, lege
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  // initialize tree-sitter parser asynchronously (do not block activation)
+  void parserInit();
+  // start the language client (minimal scaffold)
+  try {
+    const client = createClient(context);
+    client.start();
+    // ensure client is stopped on deactivate
+    context.subscriptions.push({
+      dispose: () => {
+        void client.stop();
+      }
+    } as vscode.Disposable);
+  } catch (e) {
+    // non-fatal; keep extension activation working even if LSP scaffold has issues
+    console.error('Failed to start language client (scaffold):', e);
+  }
+  // register a scaffold run command used by LSP CodeLens
+  const runDisposable = vscode.commands.registerCommand('hurl.run', async (uri: string, lineOrIndex?: number) => {
+    try {
+      const doc = uri ? await vscode.workspace.openTextDocument(uri) : vscode.window.activeTextEditor?.document;
+      const line = typeof lineOrIndex === 'number' ? lineOrIndex : 0;
+      if (!doc) return;
+      vscode.window.showInformationMessage(`Run scaffold command for ${doc.uri.fsPath} at line ${line}`);
+    } catch (err) {
+      console.error('hurl.run command failed', err);
+    }
+  });
+  context.subscriptions.push(runDisposable);
   let disposable = vscode.commands.registerCommand('hurl.hurl', () => {
     const path = vscode.window.activeTextEditor?.document.fileName;
     if (!path) {
