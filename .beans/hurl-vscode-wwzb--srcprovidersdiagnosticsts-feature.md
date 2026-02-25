@@ -1,11 +1,11 @@
 ---
 # hurl-vscode-wwzb
 title: '`src/providers/diagnostics.ts` (feature)'
-status: in-progress
+status: completed
 type: feature
 priority: critical
 created_at: 2026-02-24T22:55:08Z
-updated_at: 2026-02-25T20:59:38Z
+updated_at: 2026-02-25T21:09:00Z
 parent: hurl-vscode-3ywc
 ---
 
