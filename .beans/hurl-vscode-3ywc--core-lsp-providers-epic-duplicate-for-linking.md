@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: critical
 created_at: 2026-02-24T22:58:48Z
-updated_at: 2026-02-25T21:09:00Z
+updated_at: 2026-02-25T21:14:02Z
 parent: hurl-vscode-48s3
 ---
 
@@ -13,9 +13,9 @@ parent: hurl-vscode-48s3
 
 - [x] `src/analysis.ts` — tree-sitter init, parse, AST utilities, lookup tables
 - [x] `src/providers/diagnostics.ts` — syntax errors, method casing, undefined vars
-- [ ] `src/providers/completions.ts` — context-aware completions
-- [ ] `src/providers/hover.ts` — hover docs for methods, queries, filters, predicates
-- [ ] `src/providers/semanticTokens.ts` — migrate from extension.ts
+- [x] `src/providers/completions.ts` — context-aware completions
+- [x] `src/providers/hover.ts` — hover docs for methods, queries, filters, predicates
+- [x] `src/providers/semanticTokens.ts` — migrate from extension.ts
 - [ ] `src/providers/codeLens.ts` — Run/Run All per entry
 - [ ] `src/providers/symbols.ts` — document + workspace symbols
 - [ ] `src/providers/definition.ts` — go-to-definition for variables and file paths
