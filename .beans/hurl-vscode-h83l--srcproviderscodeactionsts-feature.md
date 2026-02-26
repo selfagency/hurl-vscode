@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-h83l
 title: '`src/providers/codeActions.ts` (feature)'
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-24T22:55:33Z

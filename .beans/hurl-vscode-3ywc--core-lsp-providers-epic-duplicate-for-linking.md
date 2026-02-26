@@ -21,12 +21,12 @@ parent: hurl-vscode-48s3
 - [x] `src/providers/definition.ts` — go-to-definition for variables and file paths
 - [x] `src/providers/references.ts` — find all references
 - [x] `src/providers/highlights.ts` — document highlights
-- [ ] `src/providers/rename.ts` — variable rename
-- [ ] `src/providers/folding.ts` — folding ranges
+- [x] `src/providers/rename.ts` — variable rename
+- [x] `src/providers/folding.ts` — folding ranges
 - [ ] `src/providers/formatting.ts` — format/range-format/on-type-format
-- [ ] `src/providers/codeActions.ts` — quick fixes
-- [ ] `src/providers/links.ts` — document links
-- [ ] `src/providers/signatureHelp.ts` — query signatures
-- [ ] `src/providers/index.ts` — barrel exports
+- [x] `src/providers/codeActions.ts` — quick fixes
+- [x] `src/providers/links.ts` — document links
+- [x] `src/providers/signatureHelp.ts` — query signatures
+- [x] `src/providers/index.ts` — barrel exports
 - [ ] Wire `src/server.ts` with full capabilities + all providers
 - [ ] Unit tests for each provider

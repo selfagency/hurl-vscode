@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-dl2l
 title: '`src/providers/signatureHelp.ts` (feature)'
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-24T22:55:36Z
