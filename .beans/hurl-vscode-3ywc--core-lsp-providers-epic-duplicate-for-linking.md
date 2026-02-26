@@ -18,7 +18,7 @@ parent: hurl-vscode-48s3
 - [x] `src/providers/semanticTokens.ts` — migrate from extension.ts
 - [x] `src/providers/codeLens.ts` — Run/Run All per entry
 - [x] `src/providers/symbols.ts` — document + workspace symbols
-- [ ] `src/providers/definition.ts` — go-to-definition for variables and file paths
+- [x] `src/providers/definition.ts` — go-to-definition for variables and file paths
 - [ ] `src/providers/references.ts` — find all references
 - [ ] `src/providers/highlights.ts` — document highlights
 - [ ] `src/providers/rename.ts` — variable rename
