@@ -1,11 +1,11 @@
 ---
 # hurl-vscode-nrjf
 title: wasm initialization wasmts reuse task
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-02-24T22:54:50Z
-updated_at: 2026-02-24T22:58:26Z
+updated_at: 2026-02-26T22:15:00Z
 parent: hurl-vscode-9i2s
 ---
 
