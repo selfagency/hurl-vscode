@@ -31,7 +31,11 @@
     "commands": [
       {
         "command": "hurl.hurl",
-        "title": "Hurl"
+        "title": "Run Hurl"
+      },
+      {
+        "command": "hurl.run",
+        "title": "Run Hurl Entry"
       }
     ],
     "languages": [
@@ -42,6 +46,20 @@
         ],
         "configuration": "./language-configuration.json"
       }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "hurl.fileTree",
+          "name": "Hurl Files"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "hurl.fileTree",
+        "contents": "No .hurl files found in the workspace."
+      }
     ]
   },
   "files": [
@@ -50,6 +68,7 @@
   ],
   "activationEvents": [
     "onCommand:hurl.hurl",
+    "onCommand:hurl.run",
     "onLanguage:hurl"
   ],
   "devDependencies": {

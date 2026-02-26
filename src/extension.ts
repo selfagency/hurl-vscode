@@ -1,144 +1,39 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import Convert from 'ansi-to-html';
-import { exec } from 'child_process';
-import * as path from 'path';
-import * as Parser from 'web-tree-sitter';
 import { createClient } from './client';
-import { highlights } from './query';
-var convert = new Convert({ escapeXML: true });
+import { HurlFileTreeProvider } from './fileTree';
+import { openQueryBuilder } from './webview/queryBuilder';
 
-const symbolTypeMap: Record<string, string> = {
-  property: 'property',
-  comment: 'comment',
-  string: 'string',
-  'string.special': 'string',
-  'string.regex': 'regexp',
-  'string.escape': 'operator',
-  type: 'type',
-  'type.builtin': 'type',
-  'function.builtin': 'function',
-  attribute: 'decorator',
-  'constant.builtin': 'enumMember',
-  boolean: 'boolean',
-  'keyword.operator': 'operator',
-  operator: 'operator',
-  number: 'number',
-  float: 'number'
-};
-
-// tree-sitter types are a bit awkward with the shipped typings; keep this loosely typed
-let sitter: [any, any] | null = null;
-async function parserInit() {
-  // the published typings don't expose some static members, so cast to any
-  await (Parser as any).init();
-  const ParserCtor = (Parser as any).default ?? (Parser as any);
-  const parser = new ParserCtor();
-  let langFile = path.join(__dirname, '../', 'tree-sitter-hurl.wasm');
-  const Hurl = await (Parser as any).Language.load(langFile);
-  parser.setLanguage(Hurl);
-  const query = (Hurl as any).query(highlights);
-  sitter = [parser, query];
-}
-
-const tokenTypes = Object.values(symbolTypeMap);
-const legend = new vscode.SemanticTokensLegend(tokenTypes);
-
-const provider: vscode.DocumentSemanticTokensProvider = {
-  provideDocumentSemanticTokens(document: vscode.TextDocument): vscode.ProviderResult<vscode.SemanticTokens> {
-    // analyze the document and return semantic tokens
-
-    const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
-    if (!sitter) {
-      return tokensBuilder.build();
-    }
-    const [parser, query] = sitter;
-    const tree = parser.parse(document.getText());
-    const captures = query.captures(tree.rootNode);
-
-    captures.forEach((capture: any) => {
-      if (!symbolTypeMap[capture.name]) return;
-      for (let i = capture.node.startPosition.row; i <= capture.node.endPosition.row; i++) {
-        let startColumn = capture.node.startPosition.column;
-        if (i !== capture.node.startPosition.row) {
-          startColumn = 0;
-        }
-        let endColumn = capture.node.endIndex - capture.node.startIndex + capture.node.startPosition.column;
-        if (i === capture.node.endPosition.row) {
-          endColumn = capture.node.endPosition.column;
-        }
-        tokensBuilder.push(
-          new vscode.Range(new vscode.Position(i, startColumn), new vscode.Position(i, endColumn)),
-          symbolTypeMap[capture.name] || capture.name
-        );
-      }
-    });
-    return tokensBuilder.build();
-  }
-};
-
-const selector = { language: 'hurl', scheme: 'file' }; // register for all Java documents from the local file system
-
-vscode.languages.registerDocumentSemanticTokensProvider(selector, provider, legend);
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  // initialize tree-sitter parser asynchronously (do not block activation)
-  void parserInit();
-  // start the language client (minimal scaffold)
+  // Start the LSP language client
   try {
     const client = createClient(context);
     client.start();
-    // ensure client is stopped on deactivate
-    context.subscriptions.push({
-      dispose: () => {
-        void client.stop();
-      }
-    } as vscode.Disposable);
+    context.subscriptions.push({ dispose: () => void client.stop() } as vscode.Disposable);
   } catch (e) {
-    // non-fatal; keep extension activation working even if LSP scaffold has issues
-    console.error('Failed to start language client (scaffold):', e);
+    console.error('Failed to start language client:', e);
   }
-  // register a scaffold run command used by LSP CodeLens
-  const runDisposable = vscode.commands.registerCommand('hurl.run', async (uri: string, lineOrIndex?: number) => {
-    try {
-      const doc = uri ? await vscode.workspace.openTextDocument(uri) : vscode.window.activeTextEditor?.document;
-      const line = typeof lineOrIndex === 'number' ? lineOrIndex : 0;
-      if (!doc) return;
-      vscode.window.showInformationMessage(`Run scaffold command for ${doc.uri.fsPath} at line ${line}`);
-    } catch (err) {
-      console.error('hurl.run command failed', err);
-    }
-  });
-  context.subscriptions.push(runDisposable);
-  let disposable = vscode.commands.registerCommand('hurl.hurl', () => {
-    const path = vscode.window.activeTextEditor?.document.fileName;
-    if (!path) {
-      return;
-    }
-    let data = '';
-    exec('hurl ' + path + ' --color', (error, stdout, stderr) => {
-      const panel = vscode.window.createWebviewPanel('hurl', 'Hurl', vscode.ViewColumn.Beside, {});
-      if (error) {
-        console.log(`error: ${error.message}`);
-        vscode.window.showErrorMessage(convert.toHtml(error.message));
-      }
-      if (stderr) {
-        data += convert.toHtml(stderr);
-        panel.webview.html = '<html><body><pre>' + data + '</pre></body></html>';
-      }
-      if (stdout) {
-        data += convert.toHtml(stdout);
-        panel.webview.html = '<html><body><pre>' + data + '</pre></body></html>';
-      }
-    });
-  });
 
-  context.subscriptions.push(disposable);
+  // Hurl Files sidebar tree
+  const treeProvider = new HurlFileTreeProvider();
+  vscode.window.registerTreeDataProvider('hurl.fileTree', treeProvider);
+  context.subscriptions.push(treeProvider);
+
+  // hurl.run — invoked by CodeLens (▶ Run and ▶ Run All)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hurl.run', (uri: string, entryIndex?: number) => {
+      openQueryBuilder(context, { uri, entryIndex });
+    })
+  );
+
+  // hurl.hurl — invoked from command palette (run the active file)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hurl.hurl', () => {
+      const doc = vscode.window.activeTextEditor?.document;
+      if (!doc) return;
+      openQueryBuilder(context, { uri: doc.uri.toString() });
+    })
+  );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
