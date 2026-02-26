@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-bilk
 title: '`src/providers/links.ts` (feature)'
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-24T22:55:38Z

@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-8x3b
 title: '`src/providers/rename.ts` (feature)'
-status: todo
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-24T22:55:51Z

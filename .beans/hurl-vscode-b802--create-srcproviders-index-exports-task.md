@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-b802
 title: Create `src/providers` index & exports (task)
-status: todo
+status: completed
 type: task
 priority: low
 created_at: 2026-02-24T22:55:40Z

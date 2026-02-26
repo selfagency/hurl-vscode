@@ -1,7 +1,7 @@
 ---
 # hurl-vscode-hdqh
 title: '`src/providers/folding.ts` (feature)'
-status: todo
+status: completed
 type: feature
 priority: low
 created_at: 2026-02-24T22:55:49Z
