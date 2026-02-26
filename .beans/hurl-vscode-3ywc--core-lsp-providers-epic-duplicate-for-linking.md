@@ -16,7 +16,7 @@ parent: hurl-vscode-48s3
 - [x] `src/providers/completions.ts` — context-aware completions
 - [x] `src/providers/hover.ts` — hover docs for methods, queries, filters, predicates
 - [x] `src/providers/semanticTokens.ts` — migrate from extension.ts
-- [ ] `src/providers/codeLens.ts` — Run/Run All per entry
+- [x] `src/providers/codeLens.ts` — Run/Run All per entry
 - [ ] `src/providers/symbols.ts` — document + workspace symbols
 - [ ] `src/providers/definition.ts` — go-to-definition for variables and file paths
 - [ ] `src/providers/references.ts` — find all references
